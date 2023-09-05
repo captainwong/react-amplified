@@ -1,18 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import logo from './logo.svg';
 import styles from './App.module.css';
 import { Amplify, API, graphqlOperation } from 'aws-amplify';
 import { createTodo } from './graphql/mutations';
 import { listTodos } from './graphql/queries';
 import awsExports from './aws-exports';
+import { withAuthenticator, WithAuthenticatorProps, Button, Heading, Text, TextField, View } from '@aws-amplify/ui-react';
+import '@aws-amplify/ui-react/styles.css';
+
 Amplify.configure(awsExports);
+
 
 const initalState = {
   name: '',
   description: ''
 };
 
-const App = () => {
+const App: React.FC<WithAuthenticatorProps> = ({ signOut, user }) => {
   const [formState, setFormState] = useState(initalState);
   const [todos, setTodos] = useState<any[]>([]);
 
@@ -46,31 +49,35 @@ const App = () => {
   }
 
   return (
-    <div className={styles.container}>
-      <h2>Amplify Todos</h2>
-      <input
+    <View className={styles.container}>
+      <Heading level={1}>Hello {user?.username}</Heading>
+      <Button onClick={signOut}>Sign Out</Button>
+      <Heading level={2}>Amplify Todos</Heading>
+      <TextField
+        label="Name"
+        placeholder="Name"
         onChange={event => setInput('name', event.target.value)}
         className={styles.input}
         value={formState.name}
-        placeholder="Name"
       />
-      <input
+      <TextField
+        label="Description"
+        placeholder="Description"
         onChange={event => setInput('description', event.target.value)}
         className={styles.input}
         value={formState.description}
-        placeholder="Description"
       />
-      <button className={styles.button} onClick={addTodo}>Create Todo</button>
+      <Button className={styles.button} onClick={addTodo}>Create Todo</Button>
       {
         todos.map((todo, index) => (
-          <div key={todo.id ? todo.id : index} className={styles.todo}>
-            <p className={styles.todoName}>{todo.name}</p>
-            <p className={styles.todoDescription}>{todo.description}</p>
-          </div>
+          <View key={todo.id ? todo.id : index} className={styles.todo}>
+            <Text className={styles.todoName}>{todo.name}</Text>
+            <Text className={styles.todoDescription}>{todo.description}</Text>
+          </View>
         ))
       }
-    </div>
+    </View>
   );
 }
 
-export default App;
+export default withAuthenticator(App);
